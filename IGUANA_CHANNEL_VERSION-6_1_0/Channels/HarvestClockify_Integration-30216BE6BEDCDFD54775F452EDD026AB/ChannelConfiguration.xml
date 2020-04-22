@@ -1,0 +1,27 @@
+<channel
+   name="Harvest/Clockify Integration"
+   guid="30216BE6BEDCDFD54775F452EDD026AB"
+   description="This channel will add any new projects and their corresponding tasks on Harvest to Clockify. Any time entries made on Clockify for these projects/tasks will by added to Harvest."
+   start_automatically="false"
+   logging_level="1"
+   use_message_filter="false">
+   <to_channel>
+   </to_channel>
+   <from_mapper
+      guid="HarvestClockify_Integration-From-XzZKUfGtySy9Ps"
+      commit_id="e0f47b68eb6ca8024e8741b670c4888f2a0e7d02"
+      commit_comment="Add user agent config"
+      poll_time="60000">
+   </from_mapper>
+   <message_filter
+      filter_after_logging="false"
+      log_pre_post_filter_message="true"
+      keep_vmd_updated="false"
+      original_vmd_path=""
+      filter_vmd_path=""
+      transformation_mode="0"
+      scripted_transformation_configuration_name="default"
+      error_handling="0"
+      use_translator_filter="true">
+   </message_filter>
+</channel>

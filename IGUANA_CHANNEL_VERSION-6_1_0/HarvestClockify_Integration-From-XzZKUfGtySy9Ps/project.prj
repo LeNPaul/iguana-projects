@@ -1,0 +1,24 @@
+{
+    "LocalDependencies": [
+        "api/clockify.lua",
+        "api/harvest.lua",
+        "config.lua",
+        "db/procedures.lua",
+        "sync/controller.lua",
+        "sync/run.lua"
+    ],
+    "LuaDependencies": [
+        "db2",
+        "filesUtil",
+        "net.http.cache",
+        "retry",
+        "store2"
+    ],
+    "OtherDependencies": [],
+    "timestamp": "1587445519",
+    "version_info": {
+        "build": 0,
+        "major": 6,
+        "minor": 0
+    }
+}
