@@ -9,8 +9,8 @@
    </to_channel>
    <from_mapper
       guid="HarvestClockify_Integration-From-XzZKUfGtySy9Ps"
-      commit_id="e0f47b68eb6ca8024e8741b670c4888f2a0e7d02"
-      commit_comment="Add user agent config"
+      commit_id="d7a7b4401fe660d19128608be3ca5fefbf4ef803"
+      commit_comment="Refactor"
       poll_time="60000">
    </from_mapper>
    <message_filter

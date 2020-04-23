@@ -2,64 +2,61 @@ local harvest = require 'api.harvest'
 local clockify = require 'api.clockify'
 local database = require 'db.procedures'
 
-local controller = {}
-
-function controller.syncProjects(self)
-   -- Get active Harvest projects
-   local activeProjects = self.harvest.activeProjects
-   -- Loop through each active Harvest project
-   for i=1, #activeProjects do 
-      -- If project ID not already in database, then it is not synced
-      local harvestProjectId = tostring(activeProjects[i].id)
-      if #database.getHarvestProjects(harvestProjectId) == 0 then
-         local projectName = activeProjects[i].name
-         local apiBody = {
-            ['name']     = projectName,
-            ['color']    = '#3498DB',
-            ['billable'] = true
-         }
-         -- Make Post to create project in Clockify
-         local clockifyProject = clockify.post('workspaces/'..self.clockify.workspaceId..'/projects', apiBody)
-         -- Insert project into database to indicate that it is synced
-         database.insertNewProject(projectName, harvestProjectId, clockifyProject.id)
-         -- Log the Clockify project creation
-         iguana.logInfo('The following project was added to Clockify: '..projectName)
-      end
+local function loopActiveHarvestProjects(func, activeHarvestProjects)
+   for i=1, #activeHarvestProjects do 
+      func(activeHarvestProjects[i])
    end
 end
 
-function controller.syncTasks(self)
-   -- Get active Harvest projects
-   local activeProjects = self.harvest.activeProjects
-   -- Loop through each active Harvest project
-   for i=1, #activeProjects do 
-      -- Get all tasks for a project on Harvest
-      local harvestProjectId = activeProjects[i].id
-      local harvestTasks     = harvest.get('projects/'..harvestProjectId..'/task_assignments').task_assignments
-      -- Loop through each task on Harvest
-      for j=1, #harvestTasks do 
-         -- If task ID not already in database, then it is not synced
-         if #database.getHarvestTasks(harvestTasks[j].task.name, harvestTasks[j].task.id..[[-]]..harvestProjectId) == 0 then 
-            local clockifyProjectId = database.getHarvestProjects(harvestProjectId)[1].clockify_project_id:nodeValue()
-            local api_body = {
-               ['name']      = harvestTasks[j].task.name,
-               ['projectId'] = clockifyProjectId
-            }
-            -- Make Post to create task in Clockify for corresponding project
-            local clockifyTaskId = clockify.post('/workspaces/'..self.clockify.workspaceId..'/projects/'..clockifyProjectId..'/tasks', api_body).id
-            -- Insert task into database to indicate that is is synced
-            database.insertNewTask(
-               harvestTasks[j].project.name, 
-               harvestTasks[j].task.name, 
-               harvestTasks[j].task.id..[[-]]..harvestProjectId, 
-               clockifyTaskId
-            )
-            -- Log the Clockify task creation
-            iguana.logInfo(
-               'The following task was added to Clockify:   '..harvestTasks[j].task.name..'\n'..
-               'The task belonged to the following project: '..activeProjects[i].name)
-         end
-      end
+local function addProject(activeHarvestProject)
+   -- If project ID not already in database, then it is not synced
+   local harvestProjectId = tostring(activeHarvestProject.id)
+   if #database.getHarvestProjects(harvestProjectId) == 0 then
+      local projectName = activeHarvestProject.name
+      local apiBody = {
+         ['name']     = projectName,
+         ['color']    = '#3498DB',
+         ['billable'] = true
+      }
+      -- Make Post to create project in Clockify
+      local clockifyProject = clockify.post('workspaces/'..self.clockify.workspaceId..'/projects', apiBody)
+      -- Insert project into database to indicate that it is synced
+      database.insertNewProject(projectName, harvestProjectId, clockifyProject.id)
+      -- Log the Clockify project creation
+      iguana.logInfo('The following project was added to Clockify: '..projectName)
+   end
+end
+
+local function addTask(activeHarvestProject, harvestTask)
+   -- If task ID not already in database, then it is not synced
+   if #database.getHarvestTasks(harvestTask.task.name, harvestTask.task.id..[[-]]..activeHarvestProject.id) == 0 then 
+      local clockifyProjectId = database.getHarvestProjects(activeHarvestProject.id)[1].clockify_project_id:nodeValue()
+      local api_body = {
+         ['name']      = harvestTask.task.name,
+         ['projectId'] = clockifyProjectId
+      }
+      -- Make Post to create task in Clockify for corresponding project
+      local clockifyTaskId = clockify.post('/workspaces/'..self.clockify.workspaceId..'/projects/'..clockifyProjectId..'/tasks', api_body).id
+      -- Insert task into database to indicate that is is synced
+      database.insertNewTask(
+         harvestTask.project.name, 
+         harvestTask.task.name, 
+         harvestTask.task.id..[[-]]..activeHarvestProject.id, 
+         clockifyTaskId
+      )
+      -- Log the Clockify task creation
+      iguana.logInfo(
+         'The following task was added to Clockify:   '..harvestTask.task.name..'\n'..
+         'The task belonged to the following project: '..activeHarvestProject.name)
+   end
+end
+
+local function loopHarvestTasks(activeHarvestProject)
+   -- Get all tasks for a project on Harvest
+   local harvestTasks     = harvest.get('projects/'..activeHarvestProject.id..'/task_assignments').task_assignments
+   -- Loop through each task on Harvest
+   for j=1, #harvestTasks do 
+      addTask(activeHarvestProject, harvestTasks[j])
    end
 end
 
@@ -82,50 +79,61 @@ local function convertTimezone(dateTime)
          sec   = dateTime:sub(18,19)} - 14400)
 end
 
-function controller.syncTimeEntries(self)
-   -- Get time entries from Clockify
-   local userId              = self.clockify.userId
-   local clockifyTimeEntries = clockify.get('/workspaces/'..self.clockify.workspaceId..'/user/'..userId..'/time-entries')
-   -- Loop through each time entry
-   for i=1, #clockifyTimeEntries do
-      local isTaskExists
-      if tostring(clockifyTimeEntries[i].taskId) ~= 'NULL' then 
-         isTaskExists = database.getClockifyTasks(clockifyTimeEntries[i].taskId)
-      end
-      local isProjectExists
-      if tostring(clockifyTimeEntries[i].projectId) ~= 'NULL' then
-         isProjectExists = database.getClockifyProjects(clockifyTimeEntries[i].projectId)
-      end
-      if isTaskExists ~= nil and #isProjectExists ~= 0 and #database.getClockifyTimeEntries(clockifyTimeEntries[i].id) == 0 then 
-         local entryDate = convertTimezone(clockifyTimeEntries[i].timeInterval.start)
-         if tostring(clockifyTimeEntries[i].timeInterval.duration) ~= 'NULL' then
-            local harvestHours = convertDurationFormat(clockifyTimeEntries[i].timeInterval.duration)
-            local api_body = {
-               ['user_id']    = tonumber(userId),
-               ['project_id'] = tonumber(isProjectExists[1].harvest_project_id:nodeValue()),
-               ['task_id']    = tonumber(isTaskExists[1].harvest_task_id:split('-')[1]),
-               ['spent_date'] = entryDate,
-               ['hours']      = harvestHours
-            }
-            -- Make Post to create time entry in Harvest
-            local harvestTimeEntryId = harvest.post('time_entries', api_body).id
-            -- Insert time entry into database to indicate that it is synced
-            database.insertNewTimeEntry(
-               isProjectExists[1].name:nodeValue(),
-               isTaskExists[1].task_name:nodeValue(), 
-               entryDate, 
-               harvestHours, 
-               harvestTimeEntryId, 
-               clockifyTimeEntries[i].id
-            )
-            -- Log the Harvest time entry creation
-            iguana.logInfo(
-               'The following time entry was added to Harvest: '..harvestHours..' hours'..'\n'..
-               'The time entry was for the following project:  '..isProjectExists[1].name:nodeValue()..'\n'..
-               'The time entry was for the following task:     '..isTaskExists[1].task_name:nodeValue())
-         end
-      end
+local function addTimeEntry(clockifyTimeEntry)
+   local project
+   if tostring(clockifyTimeEntry.projectId) ~= 'NULL' then
+      project = database.getClockifyProjects(clockifyTimeEntry.projectId)
+   end
+   if tostring(clockifyTimeEntry.taskId) ~= 'NULL' and 
+      #project ~= 0 and 
+      #database.getClockifyTimeEntries(clockifyTimeEntry.id) == 0 and 
+      tostring(clockifyTimeEntry.timeInterval.duration) ~= 'NULL' then 
+      local task = database.getClockifyTasks(clockifyTimeEntry.taskId)
+      local entryDate = convertTimezone(clockifyTimeEntry.timeInterval.start)
+      local harvestHours = convertDurationFormat(clockifyTimeEntry.timeInterval.duration)
+      local api_body = {
+         ['user_id']    = tonumber(clockifyTimeEntry.userId),
+         ['project_id'] = tonumber(project[1].harvest_project_id:nodeValue()),
+         ['task_id']    = tonumber(task[1].harvest_task_id:split('-')[1]),
+         ['spent_date'] = entryDate,
+         ['hours']      = harvestHours
+      }
+      -- Make Post to create time entry in Harvest
+      local harvestTimeEntryId = harvest.post('time_entries', api_body).id
+      -- Insert time entry into database to indicate that it is synced
+      database.insertNewTimeEntry(
+         project[1].name:nodeValue(),
+         task[1].task_name:nodeValue(), 
+         entryDate, 
+         harvestHours, 
+         harvestTimeEntryId, 
+         clockifyTimeEntry.id
+      )
+      -- Log the Harvest time entry creation
+      iguana.logInfo(
+         'The following time entry was added to Harvest: '..harvestHours..' hours'..'\n'..
+         'The time entry was for the following project:  '..project[1].name:nodeValue()..'\n'..
+         'The time entry was for the following task:     '..task[1].task_name:nodeValue())
    end
 end
 
-return controller
+local run = {}
+
+function run.syncProjects(self)
+   loopActiveHarvestProjects(addProject, self.harvest.activeHarvestProjects)
+end
+
+function run.syncTasks(self)
+   loopActiveHarvestProjects(loopHarvestTasks, self.harvest.activeHarvestProjects)
+end
+
+function run.syncTimeEntries(self)
+   -- Get time entries from Clockify
+   local clockifyTimeEntries = clockify.get('/workspaces/'..self.clockify.workspaceId..'/user/'..self.clockify.userId..'/time-entries')
+   -- Loop through each time entry
+   for i=1, #clockifyTimeEntries do
+      addTimeEntry(clockifyTimeEntries[i])
+   end
+end
+
+return run
