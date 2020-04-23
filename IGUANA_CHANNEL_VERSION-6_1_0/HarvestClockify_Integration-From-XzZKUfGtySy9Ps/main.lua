@@ -1,4 +1,4 @@
-local sync = require 'sync.controller'
+local sync = require 'sync.class'
 
 function main()
 
@@ -7,11 +7,11 @@ function main()
 
    -- Synchronize projects
    sync:projects()
-   
+
    -- Synchronize tasks
    sync:tasks()
 
    -- Synchronize time entries
    sync:timeEntries()
-   
+
 end

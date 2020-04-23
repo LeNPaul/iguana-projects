@@ -13,7 +13,7 @@ function clockify.get(uri)
       cache_time = config.global.cacheTime,
       live = config.global.isLive
    }
-   return json.parse{data=response}, code
+   return json.parse{data = response}, code
 end
 
 function clockify.post(uri, postBody)
@@ -27,7 +27,7 @@ function clockify.post(uri, postBody)
       cache_time = config.global.cacheTime,
       live = config.global.isLive
    }
-   return json.parse{data=response}, code
+   return json.parse{data = response}, code
 end
 
 return clockify

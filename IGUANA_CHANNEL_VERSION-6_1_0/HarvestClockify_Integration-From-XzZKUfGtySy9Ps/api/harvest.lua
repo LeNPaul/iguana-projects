@@ -14,7 +14,7 @@ function harvest.get(uri)
       cache_time = config.global.cacheTime,
       live = config.global.isLive
    }
-   return json.parse{data=response}, code
+   return json.parse{data = response}, code
 end
 
 function harvest.post(uri, postBody)
@@ -30,7 +30,7 @@ function harvest.post(uri, postBody)
       cache_time = config.global.cacheTime,
       live = config.global.isLive
    }
-   return json.parse{data=response}, code
+   return json.parse{data = response}, code
 end
 
 function harvest.getActiveProjects(project_list)

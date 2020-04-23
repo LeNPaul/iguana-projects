@@ -1,6 +1,6 @@
 local harvest = require 'api.harvest'
 local clockify = require 'api.clockify'
-local controller = require 'sync.run'
+local methods = require 'sync.methods'
 
 local sync = {}
 
@@ -14,10 +14,10 @@ function sync.init(self)
    local workspace = clockify.get('workspaces')
    self.clockify.workspaceId = workspace[1].id
    self.clockify.userId = workspace[1].memberships[1].userId
-   
-   self.projects = controller.syncProjects
-   self.tasks = controller.syncTasks
-   self.timeEntries = controller.syncTimeEntries
+
+   self.projects = methods.syncProjects
+   self.tasks = methods.syncTasks
+   self.timeEntries = methods.syncTimeEntries
 
 end
 

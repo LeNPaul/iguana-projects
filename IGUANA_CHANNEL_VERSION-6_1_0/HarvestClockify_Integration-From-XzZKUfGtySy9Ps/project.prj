@@ -4,8 +4,8 @@
         "api/harvest.lua",
         "config.lua",
         "db/procedures.lua",
-        "sync/controller.lua",
-        "sync/run.lua"
+        "sync/class.lua",
+        "sync/methods.lua"
     ],
     "LuaDependencies": [
         "db2",
@@ -15,7 +15,7 @@
         "store2"
     ],
     "OtherDependencies": [],
-    "timestamp": "1587613730",
+    "timestamp": "1587672920",
     "version_info": {
         "build": 0,
         "major": 6,

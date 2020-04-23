@@ -9,7 +9,7 @@
    </to_channel>
    <from_mapper
       guid="HarvestClockify_Integration-From-XzZKUfGtySy9Ps"
-      commit_id="d7a7b4401fe660d19128608be3ca5fefbf4ef803"
+      commit_id="2acef353d499daa180d8a2a45ec09ba6c8144cf9"
       commit_comment="Refactor"
       poll_time="60000">
    </from_mapper>
