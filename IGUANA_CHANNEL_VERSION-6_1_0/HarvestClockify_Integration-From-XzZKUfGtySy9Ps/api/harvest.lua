@@ -1,36 +1,47 @@
-local config = require 'config'
 require 'net.http.cache'
+local config = require 'config'
+local retry = require 'retry'
 
 local harvest = {}
 
 function harvest.get(uri)
-   local response, code = net.http.get{
-      url = config.harvest.baseUrl..uri, 
-      headers = {
-         ['Authorization'] = 'Bearer '..config.harvest.apiToken, 
-         ['Harvest-Account-Id'] = config.harvest.accountId,
-         ['User-Agent'] = config.harvest.userAgent
+   local response = retry.call{
+      funcname = 'harvest.get',
+      func = net.http.get,
+      arg1 = {
+         url = config.harvest.baseUrl..uri, 
+         headers = {
+            ['Authorization'] = 'Bearer '..config.harvest.apiToken, 
+            ['Harvest-Account-Id'] = config.harvest.accountId,
+            ['User-Agent'] = config.harvest.userAgent
+         },
+         cache_time = config.global.cacheTime,
+         live = config.global.isLive
       },
-      cache_time = config.global.cacheTime,
-      live = config.global.isLive
+      retry = config.global.retryCount, pause = config.global.pauseTime
    }
-   return json.parse{data = response}, code
+   return json.parse{data = response}
 end
 
 function harvest.post(uri, postBody)
-   local response, code = net.http.post{
-      url = config.harvest.baseUrl..uri, 
-      headers = {
-         ['Authorization'] = 'Bearer '..config.harvest.apiToken, 
-         ['Harvest-Account-Id'] = config.harvest.accountId,
-         ['User-Agent'] = 'Personal',
-         ['Content-Type'] = 'application/json'
+   local response = retry.call{
+      funcname = 'harvest.post',
+      func = net.http.post,
+      arg1 = {
+         url = config.harvest.baseUrl..uri, 
+         headers = {
+            ['Authorization'] = 'Bearer '..config.harvest.apiToken, 
+            ['Harvest-Account-Id'] = config.harvest.accountId,
+            ['User-Agent'] = 'Personal',
+            ['Content-Type'] = 'application/json'
+         },
+         body = json.serialize{data = postBody},
+         cache_time = config.global.cacheTime,
+         live = config.global.isLive
       },
-      body = json.serialize{data = postBody},
-      cache_time = config.global.cacheTime,
-      live = config.global.isLive
+      retry = config.global.retryCount, pause = config.global.pauseTime
    }
-   return json.parse{data = response}, code
+   return json.parse{data = response}
 end
 
 function harvest.getActiveProjects(project_list)

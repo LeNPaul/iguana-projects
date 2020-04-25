@@ -3,11 +3,11 @@ local config = require 'config'
 
 local conn = db2.connect{api = db.SQLITE, name = config.sql.name}
 
-local database = {}
-
 local function execute(sqlCommand)
    return conn:execute{sql = sqlCommand, live = config.global.isLive}
 end
+
+local database = {}
 
 function database.insertNewProject(projectName, harvestProjectId, clockifyProjectId)
    return execute([[INSERT INTO projects (name, harvest_project_id, clockify_project_id) VALUES(']]..

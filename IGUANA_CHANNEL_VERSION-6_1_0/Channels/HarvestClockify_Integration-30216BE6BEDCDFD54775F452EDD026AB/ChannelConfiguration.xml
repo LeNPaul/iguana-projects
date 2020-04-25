@@ -9,9 +9,9 @@
    </to_channel>
    <from_mapper
       guid="HarvestClockify_Integration-From-XzZKUfGtySy9Ps"
-      commit_id="2acef353d499daa180d8a2a45ec09ba6c8144cf9"
-      commit_comment="Refactor"
-      poll_time="60000">
+      commit_id="4ea4c0fc903a60bd977236716a6af0097d9dc10a"
+      commit_comment="Add retry functionality for Clockify and Harvest API calls"
+      poll_time="600000">
    </from_mapper>
    <message_filter
       filter_after_logging="false"
