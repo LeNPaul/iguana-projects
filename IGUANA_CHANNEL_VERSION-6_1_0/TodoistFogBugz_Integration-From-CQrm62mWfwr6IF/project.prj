@@ -1,0 +1,24 @@
+{
+    "LocalDependencies": [
+        "api/fogbugz.lua",
+        "api/todoist.lua",
+        "config.lua",
+        "db/procedures.lua",
+        "sync/class.lua",
+        "sync/methods.lua"
+    ],
+    "LuaDependencies": [
+        "db2",
+        "filesUtil",
+        "net.http.cache",
+        "retry",
+        "store2"
+    ],
+    "OtherDependencies": [],
+    "timestamp": "1587786200",
+    "version_info": {
+        "build": 0,
+        "major": 6,
+        "minor": 0
+    }
+}

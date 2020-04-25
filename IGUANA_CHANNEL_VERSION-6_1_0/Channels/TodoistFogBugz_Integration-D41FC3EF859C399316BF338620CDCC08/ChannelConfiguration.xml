@@ -1,0 +1,27 @@
+<channel
+   name="Todoist/FogBugz Integration"
+   guid="D41FC3EF859C399316BF338620CDCC08"
+   description="This channel will add any new support tickets from FogBugz to Todoist as a task. If the task is completed in Todoist, then close the ticket on FogBugz."
+   start_automatically="false"
+   logging_level="1"
+   use_message_filter="false">
+   <to_channel>
+   </to_channel>
+   <from_mapper
+      guid="TodoistFogBugz_Integration-From-CQrm62mWfwr6IF"
+      commit_id="41aa2148b4bf001945c5dc416a0aabf62fcd2434"
+      commit_comment="asdf"
+      poll_time="600000">
+   </from_mapper>
+   <message_filter
+      filter_after_logging="false"
+      log_pre_post_filter_message="true"
+      keep_vmd_updated="false"
+      original_vmd_path=""
+      filter_vmd_path=""
+      transformation_mode="0"
+      scripted_transformation_configuration_name="default"
+      error_handling="0"
+      use_translator_filter="true">
+   </message_filter>
+</channel>
