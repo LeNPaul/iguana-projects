@@ -46,7 +46,8 @@ function fogbugz.post(params)
       func = net.http.post,
       arg1 = {
          url = config.fogbugz.baseUrl..'?token='..fogbugzApiToken,
-         parameters = params,
+         headers = {['Content-Length'] = 0},
+         get_parameters = params,
          live = config.global.isLive,
          cache_time = config.global.cacheTime
       },
