@@ -29,3 +29,13 @@ function database.markTicketComplete(fogbugzTicketNumber)
 end
 
 return database
+
+--[[
+CREATE TABLE "tickets" (
+	"ticket_name"	TEXT,
+	"todoist_task_id"	TEXT,
+	"fogbugz_ticket_number"	TEXT,
+	"status"	INTEGER,
+	PRIMARY KEY("todoist_task_id","fogbugz_ticket_number")
+)
+]]--
