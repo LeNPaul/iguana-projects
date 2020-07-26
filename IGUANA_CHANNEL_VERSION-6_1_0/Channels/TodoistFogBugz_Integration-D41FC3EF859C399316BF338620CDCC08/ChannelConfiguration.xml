@@ -9,8 +9,8 @@
    </to_channel>
    <from_mapper
       guid="TodoistFogBugz_Integration-From-CQrm62mWfwr6IF"
-      commit_id="4ac3cbdaa1ee9435ef7c1f1665d8a3b590ff4e87"
-      commit_comment="Change parameters to get_parameters"
+      commit_id="ac00484c5e375302c38a5b5876fdf20c66182823"
+      commit_comment="Import Translators: Todoist/FogBugz Integration"
       poll_time="600000">
    </from_mapper>
    <message_filter
