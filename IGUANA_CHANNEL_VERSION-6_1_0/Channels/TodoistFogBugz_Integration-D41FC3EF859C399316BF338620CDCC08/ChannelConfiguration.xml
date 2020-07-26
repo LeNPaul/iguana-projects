@@ -9,8 +9,8 @@
    </to_channel>
    <from_mapper
       guid="TodoistFogBugz_Integration-From-CQrm62mWfwr6IF"
-      commit_id="d650770d19a5bd80767f2372ed365a51f42d1eeb"
-      commit_comment="Update comment"
+      commit_id="4869f659ab62c4274d3fa303a96d80b3a8dc60da"
+      commit_comment="Move comment to below code"
       poll_time="600000">
    </from_mapper>
    <message_filter
